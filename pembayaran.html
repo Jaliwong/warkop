@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembayaran WARTARA</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #1f4f3f;
+            margin: 0;
+            padding: 35px 15px;
+            display: flex;
+            justify-content: center;
+            color: #333;
+        }
+
+        .container {
+            background: #ffffff;
+            border-radius: 22px;
+            padding: 28px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #1f4f3f;
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+
+        .instruction {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+            color: #1f4f3f;
+            font-weight: 600;
+        }
+
+        .qr-box {
+            width: 100%;
+            background: #f3f7f5;
+            padding: 18px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 18px;
+            border: 2px solid #e2e7e5;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+
+        .qr-box img {
+            width: 180px;
+            border-radius: 10px;
+        }
+
+        .order-section h3 {
+            margin-bottom: 6px;
+            color: #1f4f3f;
+            font-size: 1.15em;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: #f3f7f5;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            font-size: 0.95em;
+        }
+
+        .total {
+            font-weight: bold;
+            margin-top: 10px;
+            text-align: right;
+            font-size: 1.1em;
+            color: #1f4f3f;
+        }
+
+        .nav-buttons {
+            margin-top: 25px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: .3s;
+            font-size: 0.95em;
+        }
+
+        .btn-back {
+            background: #e4e7e5;
+            color: #1f4f3f;
+        }
+        .btn-back:hover {
+            background: #d3d6d5;
+        }
+
+        .btn-pay {
+            background: #1f4f3f;
+        }
+        .btn-pay:hover {
+            background: #17493b;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>PEMBAYARAN</h2>
+
+    <p id="payment-instruction" class="instruction">...</p>
+
+    <div class="qr-box">
+        <img id="qr-image" src="" alt="Metode Pembayaran">
+    </div>
+
+    <div class="order-section">
+        <h3>Daftar Pesanan</h3>
+        <div id="order-items"></div>
+        <div class="total" id="total-harga">Total: Rp 0</div>
+    </div>
+
+    <div class="nav-buttons">
+        <a href="pesanan.html" class="btn btn-back">← Kembali</a>
+        <a id="selesaiBtn" class="btn btn-pay">Selesai →</a>
+    </div>
+</div>
+
+<script>
+    // Ambil metode pembayaran
+    let metode = localStorage.getItem('metodePembayaran') || 'QRIS';
+    let metodeLower = metode.toLowerCase().replace(/\s+/g, '');
+    if (metodeLower === "tunai") metodeLower = "cash";
+
+    const qrImage = document.getElementById("qr-image");
+    const instruction = document.getElementById('payment-instruction');
+
+    if (metodeLower === "cash") {
+        instruction.textContent = "Silakan lakukan pembayaran secara tunai di kasir.";
+        qrImage.src = "assets/image/cash.jpg";
+    } else {
+        instruction.textContent = "Scan QRIS untuk menyelesaikan pembayaran.";
+        qrImage.src = "assets/image/qris.png";
+    }
+
+    // Tampilkan daftar pesanan
+    const pesanan = JSON.parse(localStorage.getItem('pesanan')) || [];
+    const orderItems = document.getElementById('order-items');
+    const totalHargaEl = document.getElementById('total-harga');
+    let total = 0;
+
+    pesanan.forEach(item => {
+        const el = document.createElement('div');
+        el.className = 'order-item';
+        let subtotal = item.harga * item.qty;
+        el.innerHTML = `<span>${item.nama} x${item.qty}</span><span>Rp ${subtotal.toLocaleString()}</span>`;
+        orderItems.appendChild(el);
+        total += subtotal;
+    });
+
+    totalHargaEl.innerHTML = `Total: Rp ${total.toLocaleString()}`;
+
+    // PERBAIKAN UTAMA
+    document.getElementById("selesaiBtn").addEventListener("click", () => {
+        
+        // Simpan status transaksi agar halaman LIHAT ORDERAN bisa membaca
+        localStorage.setItem("orderSelesai", "true");
+
+        // Jangan hapus pesanan! (ini masalah utamanya)
+        
+        // Arahkan ke halaman bayar
+        window.location.href = "bayar.html";
+    });
+</script>
+
+</body>
+</html>

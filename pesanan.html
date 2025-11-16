@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pesanan WARTARA</title>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #1f4f3f;
+      margin: 0;
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+      color: #333;
+    }
+
+    .container {
+      background: #ffffff;
+      border-radius: 22px;
+      padding: 35px;
+      max-width: 900px;
+      width: 100%;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+      display: flex;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #1f4f3f;
+      font-size: 1.6em;
+      letter-spacing: 1px;
+    }
+
+    .section {
+      flex: 1 1 330px;
+    }
+
+    /* ====== CARD PESANAN ====== */
+    .order-card {
+      display: flex;
+      align-items: center;
+      background: #f3f7f5;
+      border-radius: 15px;
+      padding: 14px 18px;
+      margin-bottom: 15px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      transition: transform .2s;
+    }
+
+    .order-card:hover {
+      transform: scale(1.02);
+    }
+
+    .order-card img {
+      width: 65px;
+      height: 65px;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+
+    .order-info {
+      flex: 1;
+      margin-left: 15px;
+    }
+
+    .order-info h4 {
+      margin: 0;
+      font-size: 1.1em;
+      font-weight: 700;
+      color: #1f4f3f;
+    }
+
+    /* ====== QTY BUTTON ====== */
+    .order-qty {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #1f4f3f;
+      color: white;
+      padding: 6px 14px;
+      border-radius: 50px;
+      font-size: 0.9em;
+      font-weight: bold;
+    }
+
+    .order-qty button {
+      background: none;
+      color: white;
+      border: none;
+      font-size: 1.2em;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .order-qty button:hover {
+      opacity: 0.8;
+    }
+
+    /* TOTAL */
+    .total {
+      text-align: right;
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 1.1em;
+      color: #1f4f3f;
+    }
+
+    /* BUTTON */
+    .button-group {
+      margin-top: 25px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .btn {
+      background: #1f4f3f;
+      color: white;
+      border: none;
+      padding: 12px 26px;
+      border-radius: 30px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .3s, transform .2s;
+    }
+
+    .btn:hover {
+      background: #17493b;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: #e4e7e5;
+      color: #1f4f3f;
+    }
+
+    .btn-secondary:hover {
+      background: #d3d6d5;
+    }
+
+    /* PAYMENT MENU */
+    .payment-option {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background: #f3f7f5;
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: .3s;
+    }
+
+    .payment-option:hover {
+      background: #e7f4ee;
+    }
+
+    .payment-option.selected {
+      border-color: #1f4f3f;
+      background: #e0f2e9;
+    }
+
+    .payment-option img {
+      height: 34px;
+    }
+
+    .payment-name {
+      font-size: 1.05em;
+      font-weight: 600;
+      color: #1f4f3f;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+        padding: 25px;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- PESANAN -->
+  <div class="section">
+    <h2>PESANAN</h2>
+
+    <div id="order-list"></div>
+    <div class="total" id="total-harga">TOTAL PESANAN: Rp 0</div>
+
+    <div class="button-group">
+      <a href="index.html" class="btn btn-secondary">← Kembali</a>
+      <button class="btn" id="btnBayar">Lanjutkan Pembayaran →</button>
+    </div>
+  </div>
+
+  <!-- METODE PEMBAYARAN -->
+  <div class="section">
+    <h2>METODE PEMBAYARAN</h2>
+
+    <div class="payment-option" onclick="selectPayment(this)">
+      <img src="assets/image/qris.png" alt="QRIS" />
+      <span class="payment-name">QRIS</span>
+    </div>
+
+    <div class="payment-option" onclick="selectPayment(this)">
+      <img src="assets/image/cash.jpg" alt="TUNAI" />
+      <span class="payment-name">TUNAI</span>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ===================== SCRIPT PESANAN ===================== -->
+<script>
+  const pesanan = JSON.parse(localStorage.getItem('pesanan')) || [];
+  const orderList = document.getElementById('order-list');
+  const totalHargaEl = document.getElementById('total-harga');
+
+  // HITUNG TOTAL
+  function updateTotal() {
+    let total = 0;
+    pesanan.forEach(item => {
+      total += item.harga * item.qty;
+    });
+    totalHargaEl.innerHTML = `TOTAL PESANAN: <strong>Rp ${total.toLocaleString()}</strong>`;
+    localStorage.setItem('pesanan', JSON.stringify(pesanan));
+  }
+
+  // TAMPILKAN KARTU PESANAN
+  function renderPesanan() {
+    orderList.innerHTML = '';
+    pesanan.forEach((item, index) => {
+      const card = document.createElement('div');
+      card.className = 'order-card';
+
+      const img = document.createElement('img');
+      img.src = `assets/image/${item.gambar}`;
+      img.alt = item.nama;
+
+      const info = document.createElement('div');
+      info.className = 'order-info';
+      info.innerHTML = `<h4>${item.nama}</h4>`;
+
+      const qty = document.createElement('div');
+      qty.className = 'order-qty';
+      qty.innerHTML = `
+        <button onclick="ubahQty(${index}, -1)">➖</button>
+        ${item.qty}
+        <button onclick="ubahQty(${index}, 1)">➕</button>
+      `;
+
+      card.appendChild(img);
+      card.appendChild(info);
+      card.appendChild(qty);
+      orderList.appendChild(card);
+    });
+
+    updateTotal();
+  }
+
+  // UBAH QTY
+  window.ubahQty = function(index, change) {
+    pesanan[index].qty += change;
+    if (pesanan[index].qty <= 0) pesanan.splice(index, 1);
+    renderPesanan();
+  };
+
+  renderPesanan();
+
+  // ===================== SELECT PAYMENT =====================
+  let selectedMethod = null;
+
+  function selectPayment(el) {
+    document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedMethod = el.querySelector('.payment-name').textContent.trim();
+  }
+
+  // ===================== LANJUT KE PEMBAYARAN =====================
+  document.getElementById('btnBayar').addEventListener('click', () => {
+    if (!selectedMethod) {
+      alert("Silakan pilih metode pembayaran terlebih dahulu.");
+      return;
+    }
+    localStorage.setItem('metodePembayaran', selectedMethod);
+    window.location.href = 'pembayaran.html';
+  });
+</script>
+
+
+<!-- ================ SCRIPT LIST DI PEMBAYARAN (AMAN TIDAK MENGGANGGU) ================ -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    let pesanan = JSON.parse(localStorage.getItem("pesanan")) || [];
+    
+    // Pastikan elemen ada di halaman, jika tidak ada, tidak dijalankan (BIAR TIDAK ERROR)
+    let list = document.getElementById("list-pesanan");
+    let totalBox = document.getElementById("total");
+
+    if (!list || !totalBox) return;
+
+    let total = 0;
+
+    pesanan.forEach(item => {
+      let li = document.createElement("li");
+      li.textContent = `${item.nama} - Rp${item.harga}`;
+      list.appendChild(li);
+      total += item.harga;
+    });
+
+    totalBox.innerText = "Total: Rp" + total;
+  });
+</script>
+
+</body>
+</html>

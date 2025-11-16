@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lihat Orderan - WARTARA</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background-color: #f4f7f6;
+      padding: 25px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      background: #ffffff;
+      width: 100%;
+      max-width: 480px;
+      padding: 30px;
+      border-radius: 18px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+
+    h2 {
+      text-align: center;
+      color: #1f4f3f;
+      margin-bottom: 20px;
+    }
+
+    .info-box {
+      background: #e8f3ee;
+      padding: 18px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      color: #1f4f3f;
+    }
+
+    .info-box p {
+      margin: 5px 0;
+      font-size: 0.95em;
+    }
+
+    .order-title {
+      font-size: 1.2em;
+      color: #1f4f3f;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .order-item {
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      background: #f4f7f6;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      color: #1f4f3f;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+
+    .total {
+      margin-top: 15px;
+      text-align: right;
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #1f4f3f;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      padding: 14px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: bold;
+      margin-top: 15px;
+      transition: 0.3s;
+    }
+
+    .btn-print {
+      background: #0c6efd;
+      color: white;
+    }
+
+    .btn-print:hover {
+      background: #0959c3;
+    }
+
+    .btn-back {
+      background: #1f4f3f;
+      color: white;
+    }
+
+    .btn-back:hover {
+      background: #184436;
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <h2>ORDERAN ANDA</h2>
+
+    <!-- INFORMASI ORDER -->
+    <div class="info-box">
+      <p><b>No. Resi:</b> <span id="resi"></span></p>
+      <p><b>No. Antrian:</b> <span id="antrian"></span></p>
+      <p><b>Metode Pembayaran:</b> <span id="metode"></span></p>
+    </div>
+
+    <div class="order-title">Daftar Pesanan</div>
+
+    <div id="order-items"></div>
+
+    <div class="total" id="total-harga">Total: Rp 0</div>
+
+    <a href="#" id="btnCetak" class="btn btn-print">CETAK STRUK</a>
+    <a href="#" id="btnBack" class="btn btn-back">KEMBALI KE BERANDA</a>
+
+  </div>
+
+  <script>
+    // Load pesanan
+    const pesanan = JSON.parse(localStorage.getItem("pesanan")) || [];
+    const orderContainer = document.getElementById("order-items");
+    const totalHargaEl = document.getElementById("total-harga");
+    let total = 0;
+
+    pesanan.forEach(item => {
+      const row = document.createElement("div");
+      row.className = "order-item";
+
+      const subtotal = item.harga * item.qty;
+      row.innerHTML = `
+        <span>${item.nama} x${item.qty}</span>
+        <span>Rp ${subtotal.toLocaleString()}</span>
+      `;
+
+      orderContainer.appendChild(row);
+      total += subtotal;
+    });
+
+    totalHargaEl.textContent = "Total: Rp " + total.toLocaleString();
+
+    // Metode pembayaran
+    const metode = localStorage.getItem('metodePembayaran') || "QRIS";
+    document.getElementById("metode").textContent = metode;
+
+    // Generate nomor resi otomatis (tetap sama selama halaman dibuka)
+    function generateResi() {
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let resi = "";
+      for (let i = 0; i < 10; i++) {
+        resi += chars[Math.floor(Math.random() * chars.length)];
+      }
+      return resi;
+    }
+
+    // Generate No. Antrian (100 - 999)
+    function generateAntrian() {
+      return Math.floor(Math.random() * 900) + 100;
+    }
+
+    document.getElementById("resi").textContent = generateResi();
+    document.getElementById("antrian").textContent = generateAntrian();
+
+    // ========= FITUR CETAK STRUK =========
+    document.getElementById("btnCetak").addEventListener("click", () => {
+      window.print();
+    });
+
+    // ========= FITUR BACK + RESET PESANAN =========
+    document.getElementById("btnBack").addEventListener("click", () => {
+
+      // Reset data pesanan
+      localStorage.removeItem("pesanan");
+      localStorage.removeItem("metodePembayaran");
+
+      window.location.href = "index.html";
+    });
+  </script>
+</body>
+</html>
